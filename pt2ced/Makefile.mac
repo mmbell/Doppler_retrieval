@@ -1,0 +1,26 @@
+SHELL=/bin/sh
+# simple makefile for conversion of .w files to cedric and grads
+#
+# to use to make an executable file for conversion to cedric files:
+# -replace driver_write.f and driver_write.o with your files that
+# -type "make cedwrite"
+# -the executable file will be called "cedwrite"
+# 
+ALL=    pt2ced
+SRCSW=	BLHED.f    BLKDAT.f   CDATE.c  CEDLOG.f  CEDUTIL.f CIN.c    COUT.c\
+        HEADBLD.f  IMHSUM.f   SHIRBL.f WRITCED.f driver_write.f
+OBJSW=	BLHED.o    BLKDAT.o   CDATE.o  CEDLOG.o  CEDUTIL.o CIN.o    COUT.o\
+        HEADBLD.o  IMHSUM.o   SHIRBL.o WRITCED.o driver_write.o
+CC=     gcc
+FC=     gfortran
+LDR=	gfortran
+export MACOSX_DEPLOYMENT_TARGET:= 10.5
+LDFLAGS= -L$(NCARG_ROOT)/lib -lncarg -lncarg_gks -lncarg_c
+FFLAGS = -g -m64
+CFLAGS = -g -m64
+#$(OBJSR):	$(SRCSR)
+#$(OBJSW):	$(SRCSW)
+
+all:		pt2ced
+pt2ced:		$(OBJSW)
+	$(LDR) -o pt2ced $(FFLAGS) $(OBJSW) $(LDFLAGS)

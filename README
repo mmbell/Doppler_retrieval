@@ -1,0 +1,76 @@
+This is code to perform a combined dynamic and thermodynamic retrieval from Doppler wind data using the method developed in Roux et al. (1993) and previous papers.
+The basic steps to perform the retrieval are:
+1) Perform a Doppler wind synthesis and convert the resulting wind field into a binary CEDRIC (mudras) file format.
+2) Create a environmental sounding file for the background (unperturbed) reference state.
+3) Compile the 'mksnd' and 'retv-m14' programs
+4) Run the 'mksnd' program to convert the sounding to the proper format and ensure it is balanced.
+5) Run the 'retv-m14' program to do the dynamic/thermodynamic retrieval.
+6) Convert the resulting *.pt file to something more useful -- Grads and CEDRIC converters are provided.
+
+Details on individual steps:
+1) Please refer to the CEDRIC, Gamache/HRD, SAMURAI, or other documentation for this part.
+
+2) The examplesnd.dat file is a sample input to the mksnd program, which provides the background sounding for the perturbation retrieval. 
+readsnd.f is a helper application that can read older Class format files and convert them to the intermediate format that mksnd reads. 
+The easiest thing to do is usually to just print the altitude, pressure, temperature, and dewpoint of your sounding in the following column format format(3x,6f7.1):
+    6.0 1007.9   26.6   24.0
+   11.5 1007.2   26.5   23.8
+   17.0 1006.6   26.5   23.7
+   22.6 1006.0   26.4   23.6
+   28.3 1005.3   26.4   23.5
+   33.9 1004.7   26.3   23.4
+   39.6 1004.1   26.3   23.4
+   45.2 1003.4   26.2   23.4
+etc.
+
+3) A change to the retv-m14.f code needs to be made in two places (lines 133 and 1664):
+     parameter (n1=70,n2=70,n3=36,n3p1=n3+1)
+should be changed to match your grid dimensions (n1=x,n2=y,n3=z). 
+If you run into problems reading a large CEDRIC file, you may also want to increase the lbf and ibf on lines 3718 & 3719.
+
+There are no Makefiles for the compilation, just command line fortran where $(FC) is your fortran compiler. g77 and gfortran are known to work, but other compilers (pgi, intel) should probably also work.
+Some strange problems have been reported using optimization, so unless you are really in a time crunch or are feeling experimental it is probably best to compile with just debugging flags.
+
+$(FC) -g -o mksnd mksnd.f
+$(FC) -g -o retv-m14 retv-m14.f
+
+4) When you run mksnd, answer the questions about grid size and it will then output something that looks like this:
+
+  0.00 299.0367 302.3478   1.0021   1.1712   0.4353  -2.3041
+  0.40 299.2108 302.3561   0.9895   1.1342   3.0750  -3.9556
+  0.80 301.4967 304.2549   0.9767   1.0894   4.9251  -4.1835
+  1.20 303.6143 306.1576   0.9639   1.0467   5.4472  -3.6771
+  1.60 305.9901 308.1942   0.9512   1.0047   5.3475  -2.9084
+etc.
+
+which is the required format for the retrieval code. The left column height values should match your CEDRIC file and have one extra level at the top (ie. k+1).
+ 
+5) runpt-example is the script that runs the retrieval after the previous step is complete. Some of the key notes are:
+'filev1' is your input cedric file in the default case. You should set filev2 to the same thing as filev1 for the steady state case. Time differencing can be invoked with different files and the 'center' option at the end of the file.
+'filetp' is the output file, with the convention '.pt' for the output suffix. (Yes, I know its backward)
+You will need to adjust the 40.0 in 'lat-xax:40.0 -90.0' to be the central latitude of the grid (for Coriolis). Keep -90. the same assuming you don't have any rotation in your grid. 
+'adduv' can subtract a uniform advective flow on the grid
+'melt' gives the melting band in km (flag / height of 0 C relative to z1 / bottom of band in km / top of band in km )
+'filter' uses a 3-step Leise filter on the winds prior to minimizing the cost function. Unless you have a good reason to change it, this is a good filter.
+'itererr' will time out the minimization after 5000 iterations or a convergence criterion of 0.01. In some cases, the program will enter an oscillatory regime where it can't find a true minimum. If this happens, try increasing v0, w0, or try a smoother/different environmental sounding.
+'ptretv', 'thermo' and 'press' basically tell the program to run both the dynamic and thermodynamic retrievals. If you only wanted the dynamic you could change that here. 
+'v0w0' are the minimum wind speed thresholds used to calculate a solution (the solution becomes ill-posed in the null wind case). See the references for more details.
+'fileenv' should be set to the output of mksnd. 
+'uvwz' set the CEDRIC field names for the winds and reflectivity.
+'reflect' uses the reflectivity in the solution. Turn it off if your reflectivity is unreliable for some reason.
+
+All output is redirected to a log file so you can track any errors that arise. You should see *** E N D   O F   T A P *** at the bottom of the log if it ran to completion.
+
+There is a converter in the pt2ced directory to convert the output of the program to cedric. A Makefile compiles a program called pt2ced ('make pt2ced') that requires NCAR Graphics. Make a soft link to the output file called fort.99 (ln -s myoutputfile.pt fort.99) and the program will output fort.10 which is a cedric file. This can then be converted to grads or netcdf using other tools.
+A converter to grads format is also available via command line compile (pt2grads.f).
+
+This software is NOT officially supported by NCAR, but I'd be happy to try and answer questions you may have about running the program. 
+Please refer to the references for more details about the retrieval algorithm itself, and include these in any publications resulting from the use of this code.
+Also, please acknowledge NCAR/EOL and the National Science Foundation when using ELDORA or SPOL radar data in your analysis.
+
+-Michael Bell <mbell@ucar.edu> 02/2011
+
+References:
+Roux, F., and S. Ju, 1990: Single-Doppler observations of a West African squall line on 27–28 May 1981 during COPT 81: Kinematics, thermodynamics, and water budget. Mon. Wea. Rev., 118, 1826–1854.
+Roux, F., V. Marécal, and D. Hauser (1993), The 12/13 January 1988 nar- row cold‐frontal rainband observed during MFDP/FRONTS 87. Part I: Kinematics and thermodynamics, J. Atmos. Sci., 50, 951–974.
+
