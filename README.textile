@@ -18,8 +18,8 @@ Details on individual steps:
 2) The examplesnd.dat file is a sample input to the mksnd program, which provides the background sounding for the perturbation retrieval. 
 readsnd.f is a helper application that can read older Class format files and convert them to the intermediate format that mksnd reads. 
 The easiest thing to do is usually to just print the altitude, pressure, temperature, and dewpoint of your sounding in the following column format format(3x,6f7.1):
-=
-    6.0 1007.9   26.6   24.0
+
+bc..    6.0  1007.9   26.6   24.0
    11.5 1007.2   26.5   23.8
    17.0 1006.6   26.5   23.7
    22.6 1006.0   26.4   23.6
@@ -27,8 +27,8 @@ The easiest thing to do is usually to just print the altitude, pressure, tempera
    33.9 1004.7   26.3   23.4
    39.6 1004.1   26.3   23.4
    45.2 1003.4   26.2   23.4
-=
-etc.
+
+p. etc.
 
 3) A change to the retv-m14.f code needs to be made in two places (lines 133 and 1664):
      parameter (n1=70,n2=70,n3=36,n3p1=n3+1)
@@ -42,14 +42,14 @@ Some strange problems have been reported using optimization, so unless you are r
 @$(FC) -g -o retv-m14 retv-m14.f@
 
 4) When you run mksnd, answer the questions about grid size and it will then output something that looks like this:
-=
-  0.00 299.0367 302.3478   1.0021   1.1712   0.4353  -2.3041
+
+bc..   0.00 299.0367 302.3478   1.0021   1.1712   0.4353  -2.3041
   0.40 299.2108 302.3561   0.9895   1.1342   3.0750  -3.9556
   0.80 301.4967 304.2549   0.9767   1.0894   4.9251  -4.1835
   1.20 303.6143 306.1576   0.9639   1.0467   5.4472  -3.6771
   1.60 305.9901 308.1942   0.9512   1.0047   5.3475  -2.9084
-=
-etc.
+
+p. etc.
 
 which is the required format for the retrieval code. The left column height values should match your CEDRIC file and have one extra level at the top (ie. k+1).
  
@@ -67,7 +67,7 @@ You will need to adjust the 40.0 in 'lat-xax:40.0 -90.0' to be the central latit
 *uvwz* set the CEDRIC field names for the winds and reflectivity.
 *reflect* uses the reflectivity in the solution. Turn it off if your reflectivity is unreliable for some reason.
 
-All output is redirected to a log file so you can track any errors that arise. You should see =*** E N D   O F   T A P ***= at the bottom of the log if it ran to completion.
+All output is redirected to a log file so you can track any errors that arise. You should see @*** E N D   O F   T A P ***@ at the bottom of the log if it ran to completion.
 
 There is a converter in the pt2ced directory to convert the output of the program to cedric. A Makefile compiles a program called pt2ced (@make pt2ced@) that requires NCAR Graphics. Make a soft link to the output file called fort.99, @ln -s myoutputfile.pt fort.99@, and the program will output fort.10 which is a cedric file. This can then be converted to grads or netcdf using other tools.
 A converter to grads format is also available via command line compile (pt2grads.f).
@@ -78,8 +78,8 @@ Please refer to the following references for more details about the retrieval al
 
 Also, please acknowledge NCAR/EOL and the National Science Foundation if using ELDORA or SPOL radar data in your analysis.
 
-Roux, F., and S. Ju, 1990: Single-Doppler observations of a West African squall line on 27–28 May 1981 during COPT 81: Kinematics, thermodynamics, and water budget. *Mon. Wea. Rev.*, _118_, 1826–1854.
-Roux, F., V. Marécal, and D. Hauser 1993: The 12/13 January 1988 narrow cold‐frontal rainband observed during MFDP/FRONTS 87. Part I: Kinematics and thermodynamics, *J. Atmos. Sci.*, _50_, 951–974.
+Roux, F., and S. Ju, 1990: Single-Doppler observations of a West African squall line on 27–28 May 1981 during COPT 81: Kinematics, thermodynamics, and water budget. _Mon. Wea. Rev._, *118*, 1826–1854.
+Roux, F., V. Marécal, and D. Hauser 1993: The 12/13 January 1988 narrow cold‐frontal rainband observed during MFDP/FRONTS 87. Part I: Kinematics and thermodynamics, _J. Atmos. Sci._ *50*, 951–974.
 
 h2. Copyright
 
