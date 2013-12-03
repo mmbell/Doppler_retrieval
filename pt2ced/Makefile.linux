@@ -8,13 +8,13 @@ SHELL=/bin/sh
 # 
 ALL=    pt2ced
 SRCSW=	BLHED.f    BLKDAT.f   CDATE.c  CEDLOG.f  CEDUTIL.f CIN.c    COUT.c\
-        HEADBLD.f  IMHSUM.f   SHIRBL.f WRITCED.f driver_write.f
+        HEADBLD.f  IMHSUM.f   SHIRBL.f WRITCED.f driver_write.f sbytes.f
 OBJSW=	BLHED.o    BLKDAT.o   CDATE.o  CEDLOG.o  CEDUTIL.o CIN.o    COUT.o\
-        HEADBLD.o  IMHSUM.o   SHIRBL.o WRITCED.o driver_write.o
+        HEADBLD.o  IMHSUM.o   SHIRBL.o WRITCED.o driver_write.o sbytes.o
 CC=     gcc
 FC=     gfortran
 LDR=	gfortran
-LDFLAGS= -L$(NCARG_ROOT)/lib -lncarg -lncarg_gks -lncarg_c
+#LDFLAGS= -L$(NCARG_ROOT)/lib -lncarg -lncarg_gks -lncarg_c
 FFLAGS = -g -m64
 CFLAGS = -g -m64
 #$(OBJSR):	$(SRCSR)
