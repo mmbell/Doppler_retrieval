@@ -4,11 +4,13 @@ c Version 11/95
 c         04/96 test version
 c         10/96 modified tap
 c
+c Modify grid size on lines 135 & 1666
+c If problems reading large CEDRIC file, increase lbf and ibf on lines 3720 & 3721
 c
       character*80 fileenv,filev1,filev2,fileab,filetp,filetptp
       common/files/fileenv,filev1,filev2,fileab,filetp
       character*8 fnu,fnv,fnw,fnz,opt,xbuf*80,ftr*8
-      integer(kind=1) itm(9)
+      integer(kind=4) itm(9)
       common/iterms/iturb
  
       data ftr,cr,iftr/'cressman',3.,1/
@@ -130,7 +132,7 @@ c     read*,idomain,imin,imax,jmin,jmax,kmax
      +           fnu,fnv,fnw,fnz,addu,addv,hfac,itv12,xmv1,ymv1,
      +           xmv2,ymv2,icenter)
 c    NOTE! Modifying the parameter of dimension if the domain is changed.
-      parameter (n1=70,n2=70,n3=36,n3p1=n3+1)
+      parameter (n1=81,n2=201,n3=36,n3p1=n3+1)
 c
       integer   iday(6),ih(6),jh(6),it(n1,n3,14),kk(n3)
       real      u(n1,n2,n3),v(n1,n2,n3),w(n1,n2,n3)
@@ -903,7 +905,7 @@ c
                  if(trm.ge.1.)then
                    dtqm=xmean(dtq,n1,n2,n3)
                    vdq=xlag(u,v,w,qp,n1,n2,n3,4)
-                   dzvq=derz(qp,vp,rho0,n1,n2,n3)
+                   dzvq=derz(qp,vp,rho0,n1,n2,n3,n3p1)
                    fq(i,j,k)=dtqm+vdq+dzvq
                  else
                    fq(i,j,k)=0.
@@ -1374,9 +1376,9 @@ c**** THIS FUNCTION CALCULATES THE VERTICAL DERIVATIVE
 c**** 1/RHO*d(RHO*VP*QP)/dz
 c**** AT (I+1/2,J+1/2,K+1/2)
 c
-      function derz(q,vp,rho0,n1,n2,n3)
+      function derz(q,vp,rho0,n1,n2,n3,n3p1)
 c
-      dimension q(n1,n2,n3),vp(n1,n2,n3),rho0(40)
+      dimension q(n1,n2,n3),vp(n1,n2,n3),rho0(n3p1)
 c
       common/grid/hx,hy,hz,nx,ny,nz,i2d
       common/coord/i,j,k
@@ -1661,7 +1663,7 @@ c
 c     program tap
 c c.liu 10/26/96 moified
 c
-      parameter(n1=70,n2=70,n3=36,n3p1=n3+1)
+      parameter(n1=81,n2=201,n3=36,n3p1=n3+1)
 c
       integer ih(6),itp(n1,n2,n3,7),kk(n3),itm6(9)
       real u(n1,n2,n3),v(n1,n2,n3),w(n1,n2,n3)
@@ -2253,7 +2255,7 @@ c
         print *,' '
 c
         call ajusp(pa,pp,ax,ay,az,xmat,vect,p,cp0,a,b,c,d
-     &             ,tetav0,rho0,itp,n1,n2,n3)
+     &             ,tetav0,rho0,itp,n1,n2,n3,n3p1)
         if(ibreak.eq.1)then
           testmax=testmax*testmax
           go to 2
@@ -2914,13 +2916,13 @@ c
 c**** THIS ROUTINE WRITES THE MATRIX AND VECTOR FOR PRESSURE RETRIEVAL
 c
       subroutine ajusp(pa,pp,ax,ay,az,x,v,p,cp0,a,b,c,d
-     &                 ,tetav0,rho0,ip,n1,n2,n3)
+     &                 ,tetav0,rho0,ip,n1,n2,n3,n3p1)
 c
       real ax(n1,n2,n3),ay(n1,n2,n3),az(n1,n2,n3)
      &    ,pa(n1,n2,n3),pp(n1,n2,n3)
      &    ,x(27,n1,n2,n3),v(n1,n2,n3),p(n1,n2,n3)
      &    ,a(n1,n2,n3),b(n1,n2,n3),c(n1,n2,n3),d(n1,n2,n3)
-     &    ,tetav0(40),rho0(40)
+     &    ,tetav0(n3p1),rho0(n3p1)
       integer ip(n1,n2,n3,7)
 c
       common/grid/hx,hy,hz,nx,ny,nz,i2d
@@ -3804,7 +3806,7 @@ c     Swap words
 c
 c  for ced file
 c
-      if(icall.eq.0)then
+      if(icall.ge.0)then
          ibad=id(67)
          nprec=id(96)
          nz=id(106)
